@@ -8,6 +8,7 @@ global:
   hipchat_auth_token: '1234556789'
   # Alternative host for Hipchat.
   hipchat_api_url: 'https://hipchat.foobar.org/'
+  webex_api_url: 'https://webex.example.org/'
 
 # The directory from which notification templates are read.
 templates: 
@@ -122,3 +123,8 @@ receivers:
     room_id: 85
     message_format: html
     notify: true
+
+- name: 'team-X-webex'
+  webex_configs:
+  - room_id: <room id>
+    sender_token: <token>

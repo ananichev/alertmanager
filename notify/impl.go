@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"mime"
 	"mime/multipart"
@@ -116,6 +117,10 @@ func BuildReceiverIntegrations(nc *config.Receiver, tmpl *template.Template, log
 	for i, c := range nc.PushoverConfigs {
 		n := NewPushover(c, tmpl, logger)
 		add("pushover", i, n, c)
+	}
+	for i, c := range nc.WebexTeamsConfigs {
+		n := NewWebexTeams(c, tmpl, logger)
+		add("webex", i, n, c)
 	}
 	return integrations
 }
@@ -858,6 +863,90 @@ func (n *Hipchat) retry(statusCode int) (bool, error) {
 	return false, nil
 }
 
+// WebexTeams implements a Notifier for Webex Teams notifications.
+type WebexTeams struct {
+	conf   *config.WebexTeamsConfig
+	tmpl   *template.Template
+	logger log.Logger
+}
+
+// NewWebexTeams returns a new Webex Teams notification handler.
+func NewWebexTeams(c *config.WebexTeamsConfig, t *template.Template, l log.Logger) *WebexTeams {
+	return &WebexTeams{
+		conf:   c,
+		tmpl:   t,
+		logger: l,
+	}
+}
+
+type webexTeamsReq struct {
+	RoomID   string `json:"roomId"`
+	Text     string `json:"text"`
+	Markdown string `json:"markdown"`
+}
+
+// Notify implements the Notifier interface.
+func (n *WebexTeams) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
+	var err error
+	var (
+		data        = n.tmpl.Data(receiverName(ctx, n.logger), groupLabels(ctx, n.logger), as...)
+		tmplText    = tmplText(n.tmpl, data, &err)
+		roomid      = tmplText(n.conf.RoomID)
+		senderToken = tmplText(n.conf.SenderToken)
+		apiURL      = n.conf.APIURL.Copy()
+	)
+
+	if err != nil {
+		return false, err
+	}
+
+	apiURL.Path += "v1/messages"
+
+	req := &webexTeamsReq{
+		RoomID: roomid,
+	}
+
+	if len(n.conf.Markdown) != 0 {
+		req.Markdown = tmplText(n.conf.Markdown)
+	} else {
+		req.Text = tmplText(n.conf.Text)
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(req); err != nil {
+		return false, err
+	}
+
+	c, err := commoncfg.NewClientFromConfig(*n.conf.HTTPConfig, "webex")
+	if err != nil {
+		return false, err
+	}
+
+	authHeader := map[string]string{
+		"Authorization": fmt.Sprintf("Bearer %s", senderToken),
+	}
+
+	resp, err := post(ctx, c, apiURL.String(), contentTypeJSON, &buf, authHeader)
+
+	if err != nil {
+		return true, err
+	}
+
+	defer resp.Body.Close()
+
+	return n.retry(resp.StatusCode)
+}
+
+func (n *WebexTeams) retry(statusCode int) (bool, error) {
+	// Only 5xx response codes are recoverable and 2xx codes are successful.
+	// https://developer.webex.com/docs/api/v1/messages/create-a-message
+	if statusCode/100 != 2 {
+		return (statusCode/100 == 5), fmt.Errorf("unexpected status code %v", statusCode)
+	}
+
+	return false, nil
+}
+
 // Wechat implements a Notfier for wechat notifications
 type Wechat struct {
 	conf   *config.WechatConfig
@@ -1437,4 +1526,22 @@ func hashKey(s string) string {
 	h := sha256.New()
 	h.Write([]byte(s))
 	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+func post(ctx context.Context,
+	client *http.Client,
+	url string,
+	bodyType string,
+	body io.Reader,
+	headers map[string]string) (*http.Response, error) {
+
+	req, err := http.NewRequest("POST", url, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", bodyType)
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+	return client.Do(req.WithContext(ctx))
 }

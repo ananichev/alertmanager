@@ -26,6 +26,7 @@
 {{ define "hipchat.default.from" }}{{ template "__alertmanager" . }}{{ end }}
 {{ define "hipchat.default.message" }}{{ template "__subject" . }}{{ end }}
 
+{{ define "webex.default.text" }}{{ template "__subject" . }}{{ end }}
 
 {{ define "pagerduty.default.description" }}{{ template "__subject" . }}{{ end }}
 {{ define "pagerduty.default.client" }}{{ template "__alertmanager" . }}{{ end }}

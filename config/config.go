@@ -297,6 +297,20 @@ func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 				hc.AuthToken = c.Global.HipchatAuthToken
 			}
 		}
+		for _, wt := range rcv.WebexTeamsConfigs {
+			if wt.HTTPConfig == nil {
+				wt.HTTPConfig = c.Global.HTTPConfig
+			}
+			if wt.APIURL == nil {
+				if c.Global.WebexAPIURL == nil {
+					return fmt.Errorf("no global Webex API URL set")
+				}
+				wt.APIURL = c.Global.WebexAPIURL
+			}
+			if !strings.HasSuffix(wt.APIURL.Path, "/") {
+				wt.APIURL.Path += "/"
+			}
+		}
 		for _, poc := range rcv.PushoverConfigs {
 			if poc.HTTPConfig == nil {
 				poc.HTTPConfig = c.Global.HTTPConfig
@@ -428,6 +442,7 @@ var DefaultGlobalConfig = GlobalConfig{
 	SMTPRequireTLS:  true,
 	PagerdutyURL:    mustParseURL("https://events.pagerduty.com/v2/enqueue"),
 	HipchatAPIURL:   mustParseURL("https://api.hipchat.com/"),
+	WebexAPIURL:     mustParseURL("https://api.ciscospark.com/"),
 	OpsGenieAPIURL:  mustParseURL("https://api.opsgenie.com/"),
 	WeChatAPIURL:    mustParseURL("https://qyapi.weixin.qq.com/cgi-bin/"),
 	VictorOpsAPIURL: mustParseURL("https://alert.victorops.com/integrations/generic/20131114/alert/"),
@@ -462,6 +477,7 @@ type GlobalConfig struct {
 	PagerdutyURL     *URL       `yaml:"pagerduty_url,omitempty" json:"pagerduty_url,omitempty"`
 	HipchatAPIURL    *URL       `yaml:"hipchat_api_url,omitempty" json:"hipchat_api_url,omitempty"`
 	HipchatAuthToken Secret     `yaml:"hipchat_auth_token,omitempty" json:"hipchat_auth_token,omitempty"`
+	WebexAPIURL      *URL       `yaml:"webex_api_url,omitempty" json:"webex_api_url,omitempty"`
 	OpsGenieAPIURL   *URL       `yaml:"opsgenie_api_url,omitempty" json:"opsgenie_api_url,omitempty"`
 	OpsGenieAPIKey   Secret     `yaml:"opsgenie_api_key,omitempty" json:"opsgenie_api_key,omitempty"`
 	WeChatAPIURL     *URL       `yaml:"wechat_api_url,omitempty" json:"wechat_api_url,omitempty"`
@@ -591,15 +607,16 @@ type Receiver struct {
 	// A unique identifier for this receiver.
 	Name string `yaml:"name" json:"name"`
 
-	EmailConfigs     []*EmailConfig     `yaml:"email_configs,omitempty" json:"email_configs,omitempty"`
-	PagerdutyConfigs []*PagerdutyConfig `yaml:"pagerduty_configs,omitempty" json:"pagerduty_configs,omitempty"`
-	HipchatConfigs   []*HipchatConfig   `yaml:"hipchat_configs,omitempty" json:"hipchat_configs,omitempty"`
-	SlackConfigs     []*SlackConfig     `yaml:"slack_configs,omitempty" json:"slack_configs,omitempty"`
-	WebhookConfigs   []*WebhookConfig   `yaml:"webhook_configs,omitempty" json:"webhook_configs,omitempty"`
-	OpsGenieConfigs  []*OpsGenieConfig  `yaml:"opsgenie_configs,omitempty" json:"opsgenie_configs,omitempty"`
-	WechatConfigs    []*WechatConfig    `yaml:"wechat_configs,omitempty" json:"wechat_configs,omitempty"`
-	PushoverConfigs  []*PushoverConfig  `yaml:"pushover_configs,omitempty" json:"pushover_configs,omitempty"`
-	VictorOpsConfigs []*VictorOpsConfig `yaml:"victorops_configs,omitempty" json:"victorops_configs,omitempty"`
+	EmailConfigs      []*EmailConfig      `yaml:"email_configs,omitempty" json:"email_configs,omitempty"`
+	PagerdutyConfigs  []*PagerdutyConfig  `yaml:"pagerduty_configs,omitempty" json:"pagerduty_configs,omitempty"`
+	HipchatConfigs    []*HipchatConfig    `yaml:"hipchat_configs,omitempty" json:"hipchat_configs,omitempty"`
+	SlackConfigs      []*SlackConfig      `yaml:"slack_configs,omitempty" json:"slack_configs,omitempty"`
+	WebexTeamsConfigs []*WebexTeamsConfig `yaml:"webex_configs,omitempty" json:"webex_configs,omitempty"`
+	WebhookConfigs    []*WebhookConfig    `yaml:"webhook_configs,omitempty" json:"webhook_configs,omitempty"`
+	OpsGenieConfigs   []*OpsGenieConfig   `yaml:"opsgenie_configs,omitempty" json:"opsgenie_configs,omitempty"`
+	WechatConfigs     []*WechatConfig     `yaml:"wechat_configs,omitempty" json:"wechat_configs,omitempty"`
+	PushoverConfigs   []*PushoverConfig   `yaml:"pushover_configs,omitempty" json:"pushover_configs,omitempty"`
+	VictorOpsConfigs  []*VictorOpsConfig  `yaml:"victorops_configs,omitempty" json:"victorops_configs,omitempty"`
 }
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface.

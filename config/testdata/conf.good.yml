@@ -10,6 +10,7 @@ global:
   # Alternative host for Hipchat.
   hipchat_api_url: 'https://hipchat.foobar.org/'
   slack_api_url: "http://mysecret.example.com/"
+  webex_api_url: "http://mysecret.webex.com/"
 
 
 
@@ -138,3 +139,7 @@ receivers:
   pushover_configs:
     - token: mysecret
       user_key: key
+- name: 'webex'
+  webex_configs:
+  - room_id: "RoomID"
+    sender_token: "Sender Authorization Token"

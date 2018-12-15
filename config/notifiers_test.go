@@ -322,6 +322,40 @@ token: ''
 	}
 }
 
+func TestWebexTeamsRoomIDIsPresent(t *testing.T) {
+	in := `
+room_id: ''
+`
+	var cfg WebexTeamsConfig
+	err := yaml.UnmarshalStrict([]byte(in), &cfg)
+
+	expected := "missing room id in Webex config"
+
+	if err == nil {
+		t.Fatalf("no error returned, expected:\n%v", expected)
+	}
+	if err.Error() != expected {
+		t.Errorf("\nexpected:\n%v\ngot:\n%v", expected, err.Error())
+	}
+}
+
+func TestWebexTeamsSenderTokenIsPresent(t *testing.T) {
+	in := `
+sender_token: ''
+`
+	var cfg WebexTeamsConfig
+	err := yaml.UnmarshalStrict([]byte(in), &cfg)
+
+	expected := "missing sender token in Webex config"
+
+	if err == nil {
+		t.Fatalf("no error returned, expected:\n%v", expected)
+	}
+	if err.Error() != expected {
+		t.Errorf("\nexpected:\n%v\ngot:\n%v", expected, err.Error())
+	}
+}
+
 func TestSlackFieldConfigValidation(t *testing.T) {
 	var tests = []struct {
 		in       string
