@@ -89,6 +89,14 @@ var (
 		MessageFormat: `text`,
 	}
 
+	// DefaultWebexTeamsConfig defines default values for WebexTeams configurations.
+	DefaultWebexTeamsConfig = WebexTeamsConfig{
+		NotifierConfig: NotifierConfig{
+			VSendResolved: false,
+		},
+		Text: `{{ template "webex.default.text" . }}`,
+	}
+
 	// DefaultOpsGenieConfig defines default values for OpsGenie configurations.
 	DefaultOpsGenieConfig = OpsGenieConfig{
 		NotifierConfig: NotifierConfig{
@@ -393,6 +401,35 @@ func (c *HipchatConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	if c.RoomID == "" {
 		return fmt.Errorf("missing room id in Hipchat config")
+	}
+	return nil
+}
+
+// WebexTeamsConfig configures notifications via Webex Teams.
+type WebexTeamsConfig struct {
+	NotifierConfig `yaml:",inline" json:",inline"`
+
+	HTTPConfig *commoncfg.HTTPClientConfig `yaml:"http_config,omitempty" json:"http_config,omitempty"`
+
+	APIURL      *URL   `yaml:"api_url,omitempty" json:"api_url,omitempty"`
+	RoomID      string `yaml:"room_id,omitempty" json:"room_id,omitempty"`
+	SenderToken string `yaml:"sender_token,omitempty" json:"sender_token,omitempty"`
+	Text        string `yaml:"text,omitempty" json:"text,omitempty"`
+	Markdown    string `yaml:"markdown,omitempty" json:"markdown,omitempty"`
+}
+
+// UnmarshalYAML implements the yaml.Unmarshaler interface.
+func (c *WebexTeamsConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	*c = DefaultWebexTeamsConfig
+	type plain WebexTeamsConfig
+	if err := unmarshal((*plain)(c)); err != nil {
+		return err
+	}
+	if c.RoomID == "" {
+		return fmt.Errorf("missing room id in Webex config")
+	}
+	if c.SenderToken == "" {
+		return fmt.Errorf("missing sender token in Webex config")
 	}
 	return nil
 }

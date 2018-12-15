@@ -60,6 +60,7 @@ var (
 func init() {
 	numNotifications.WithLabelValues("email")
 	numNotifications.WithLabelValues("hipchat")
+	numNotifications.WithLabelValues("webex")
 	numNotifications.WithLabelValues("pagerduty")
 	numNotifications.WithLabelValues("wechat")
 	numNotifications.WithLabelValues("pushover")
@@ -69,6 +70,7 @@ func init() {
 	numNotifications.WithLabelValues("victorops")
 	numFailedNotifications.WithLabelValues("email")
 	numFailedNotifications.WithLabelValues("hipchat")
+	numFailedNotifications.WithLabelValues("webex")
 	numFailedNotifications.WithLabelValues("pagerduty")
 	numFailedNotifications.WithLabelValues("wechat")
 	numFailedNotifications.WithLabelValues("pushover")
@@ -78,6 +80,7 @@ func init() {
 	numFailedNotifications.WithLabelValues("victorops")
 	notificationLatencySeconds.WithLabelValues("email")
 	notificationLatencySeconds.WithLabelValues("hipchat")
+	notificationLatencySeconds.WithLabelValues("webex")
 	notificationLatencySeconds.WithLabelValues("pagerduty")
 	notificationLatencySeconds.WithLabelValues("wechat")
 	notificationLatencySeconds.WithLabelValues("pushover")
