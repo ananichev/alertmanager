@@ -412,8 +412,8 @@ type WebexTeamsConfig struct {
 	HTTPConfig *commoncfg.HTTPClientConfig `yaml:"http_config,omitempty" json:"http_config,omitempty"`
 
 	APIURL      *URL   `yaml:"api_url,omitempty" json:"api_url,omitempty"`
-	RoomID      string `yaml:"room_id,omitempty" json:"room_id,omitempty"`
-	SenderToken string `yaml:"sender_token,omitempty" json:"sender_token,omitempty"`
+	RoomID      Secret `yaml:"room_id,omitempty" json:"room_id,omitempty"`
+	SenderToken Secret `yaml:"sender_token,omitempty" json:"sender_token,omitempty"`
 	Text        string `yaml:"text,omitempty" json:"text,omitempty"`
 	Markdown    string `yaml:"markdown,omitempty" json:"markdown,omitempty"`
 }
