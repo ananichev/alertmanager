@@ -891,8 +891,8 @@ func (n *WebexTeams) Notify(ctx context.Context, as ...*types.Alert) (bool, erro
 	var (
 		data        = n.tmpl.Data(receiverName(ctx, n.logger), groupLabels(ctx, n.logger), as...)
 		tmplText    = tmplText(n.tmpl, data, &err)
-		roomid      = tmplText(n.conf.RoomID)
-		senderToken = tmplText(n.conf.SenderToken)
+		roomid      = tmplText(fmt.Sprintf("%s", n.conf.RoomID))
+		senderToken = tmplText(fmt.Sprintf("%s", n.conf.SenderToken))
 		apiURL      = n.conf.APIURL.Copy()
 	)
 
